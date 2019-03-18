@@ -1,3 +1,17 @@
+var cityPop = (function() {
+        var json = null;
+        $.ajax({
+            'async': false,
+            'global': false,
+            'url': "/data/cities.json",
+            'dataType': "json",
+            'success': function (data) {
+                json = data;
+            }
+        });
+        return json;
+})();
+
 //execute script when window is loaded
 window.onload = function(){
     //SVG dimension variables
@@ -19,25 +33,6 @@ window.onload = function(){
         .attr("x", 60)
         .attr("y", 50)
         .style("fill", "#ffffff");
-
-    var cityPop = [
-        {
-            city: 'Tokyo',
-            population: 38140000
-        },
-        {
-            city: 'Jakarta',
-            population: 30139000
-        },
-        {
-            city: 'New York City',
-            population: 20153000
-        },
-        {
-            city: 'Rio de Janiro',
-            population: 12727000
-        }
-    ];
 
     var x = d3.scaleLinear()
         .range([100, 750]) // output min and max

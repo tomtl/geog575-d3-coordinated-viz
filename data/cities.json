@@ -1,0 +1,18 @@
+[
+    {
+        "city": "Tokyo",
+        "population": 38140000
+    },
+    {
+        "city": "Jakarta",
+        "population": 30139000
+    },
+    {
+        "city": "New York City",
+        "population": 20153000
+    },
+    {
+        "city": "Rio de Janiro",
+        "population": 12727000
+    }
+]
