@@ -13,15 +13,10 @@ window.onload = function(){
         .style("background-color", "rgba(0,0,0,0.2)")
 
     var innerRect = container.append("rect")
-        .datum(400)
-        .attr("width", function(d){
-            return d * 2;
-        })
-        .attr("height", function(d){
-            return d;
-        })
+        .attr("width", 800)
+        .attr("height", 400)
         .attr("class", "innerRect")
-        .attr("x", 50)
+        .attr("x", 60)
         .attr("y", 50)
         .style("fill", "#ffffff");
 
@@ -45,8 +40,8 @@ window.onload = function(){
     ];
 
     var x = d3.scaleLinear()
-        .range([90, 750]) // output min and max
-        .domain([0, 3]) // input min and max
+        .range([100, 750]) // output min and max
+        .domain([0, 3.2]) // input min and max
     ;
 
     var minPop = d3.min(cityPop, function(d){
@@ -97,7 +92,7 @@ window.onload = function(){
 
     var axis = container.append("g")
         .attr("class", "axis")
-        .attr("transform", "translate(50, 0)")
+        .attr("transform", "translate(60, 0)")
         .call(yAxis);
 
     var title = container.append("text")
