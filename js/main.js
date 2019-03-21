@@ -37,6 +37,37 @@ function setMap(){
         // translate topojson
         var tracts = topojson.feature(polygonData, polygonData.objects.nyc_tracts);
 
+
+        // console.log(csvData);
+        // console.log(polygonData);
+
+        let attrArray = [
+            "median_rent",
+            "median_value",
+            "median_income",
+            "median_year_built",
+            "avg_household_size"
+        ];
+
+        for (var i=0; i<csvData.length; i++) {
+            var csvRegion = csvData[i];
+            var csvKey = csvRegion.tract_id;
+
+            for (var a=0; a < tracts.features.length; a++) {
+                var geojsonProps = tracts.features[a].properties;
+                var geojsonKey = geojsonProps.tract_id;
+
+                if (geojsonKey == csvKey) {
+                    attrArray.forEach(function(attr){
+                        var val = parseFloat(csvRegion[attr]);
+                        geojsonProps[attr] = val;
+                    });
+                };
+            };
+        };
+
+        console.log(geojsonProps);
+
         // graticules
         let graticule = d3.geoGraticule()
             .step([5, 5]);
