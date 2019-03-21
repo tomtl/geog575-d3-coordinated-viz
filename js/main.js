@@ -32,14 +32,12 @@ function setMap(){
         .await(callback);
 
     function callback(error, csvData, polygonData, france){
-        console.log(error);
+        // console.log(error);
+
+        setGraticule(map, path);
 
         // translate topojson
         var tracts = topojson.feature(polygonData, polygonData.objects.nyc_tracts);
-
-
-        // console.log(csvData);
-        // console.log(polygonData);
 
         let attrArray = [
             "median_rent",
@@ -66,24 +64,6 @@ function setMap(){
             };
         };
 
-        console.log(geojsonProps);
-
-        // graticules
-        let graticule = d3.geoGraticule()
-            .step([5, 5]);
-
-        let gratBackground = map.append("path")
-            .datum(graticule.outline())
-            .attr("class", "gratBackground")
-            .attr("d", path);
-
-        let gratLines = map.selectAll(".gratLines")
-            .data(graticule.lines())
-            .enter()
-            .append("path")
-            .attr("class", "gratLines")
-            .attr("d", path);
-
         // add polygons to map
         let polygons = map.append("path")
             .datum(tracts)
@@ -91,4 +71,21 @@ function setMap(){
             .attr("d", path);
 
     };
+};
+
+function setGraticule(map, path) {
+    let graticule = d3.geoGraticule()
+        .step([5, 5]);
+
+    let gratBackground = map.append("path")
+        .datum(graticule.outline())
+        .attr("class", "gratBackground")
+        .attr("d", path);
+
+    let gratLines = map.selectAll(".gratLines")
+        .data(graticule.lines())
+        .enter()
+        .append("path")
+        .attr("class", "gratLines")
+        .attr("d", path);
 };
