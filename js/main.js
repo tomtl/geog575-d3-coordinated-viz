@@ -27,52 +27,25 @@ function setMap(){
 
     //use queue to parallelize asynchronous data loading
     d3_queue.queue()
-        .defer(d3.csv, "data/acs_housing_tract.csv") //load attributes from csv
-        .defer(d3.json, "data/nyc_tracts_simple.topojson") //load background spatial data
+        .defer(d3.csv, "data/acs_housing_tract.csv")
+        .defer(d3.json, "data/nyc_tracts_simple.topojson")
         .await(callback);
 
     function callback(error, csvData, polygonData, france){
-        // console.log(error);
-
         setGraticule(map, path);
 
         // translate topojson
         var tracts = topojson.feature(polygonData, polygonData.objects.nyc_tracts);
 
-        let attrArray = [
-            "median_rent",
-            "median_value",
-            "median_income",
-            "median_year_built",
-            "avg_household_size"
-        ];
-
-        for (var i=0; i<csvData.length; i++) {
-            var csvRegion = csvData[i];
-            var csvKey = csvRegion.tract_id;
-
-            for (var a=0; a < tracts.features.length; a++) {
-                var geojsonProps = tracts.features[a].properties;
-                var geojsonKey = geojsonProps.tract_id;
-
-                if (geojsonKey == csvKey) {
-                    attrArray.forEach(function(attr){
-                        var val = parseFloat(csvRegion[attr]);
-                        geojsonProps[attr] = val;
-                    });
-                };
-            };
-        };
+        // join tracts to csv data
+        tracts = joinData(tracts, csvData);
 
         // add polygons to map
-        let polygons = map.append("path")
-            .datum(tracts)
-            .attr("class", "tracts")
-            .attr("d", path);
-
+        setEnumerationUnits(tracts, map, path);
     };
 };
 
+// add the graticule lines
 function setGraticule(map, path) {
     let graticule = d3.geoGraticule()
         .step([5, 5]);
@@ -87,5 +60,42 @@ function setGraticule(map, path) {
         .enter()
         .append("path")
         .attr("class", "gratLines")
+        .attr("d", path);
+};
+
+// join csv data to polygons
+function joinData(tracts, csvData){
+    let attrArray = [
+        "median_rent",
+        "median_value",
+        "median_income",
+        "median_year_built",
+        "avg_household_size"
+    ];
+
+    for (var i=0; i<csvData.length; i++) {
+        var csvRegion = csvData[i];
+        var csvKey = csvRegion.tract_id;
+
+        for (var a=0; a < tracts.features.length; a++) {
+            var geojsonProps = tracts.features[a].properties;
+            var geojsonKey = geojsonProps.tract_id;
+
+            if (geojsonKey == csvKey) {
+                attrArray.forEach(function(attr){
+                    var val = parseFloat(csvRegion[attr]);
+                    geojsonProps[attr] = val;
+                });
+            };
+        };
+    };
+    return tracts;
+};
+
+// draw the map
+function setEnumerationUnits(tracts, map, path){
+    let polygons = map.append("path")
+        .datum(tracts)
+        .attr("class", "tracts")
         .attr("d", path);
 };
