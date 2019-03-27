@@ -16,10 +16,10 @@ function setMap(){
 
     // setup projection
     let projection = d3.geoAlbers()
-        .center([0, 41.0])
+        .center([0, 40.75])
         .rotate([74, 0, 0])
         .parallels([29.5, 45.5])
-        .scale(6000)
+        .scale(50000)
         .translate([width / 2, height / 2]);
 
     let path = d3.geoPath()
@@ -28,27 +28,30 @@ function setMap(){
     //use queue to parallelize asynchronous data loading
     d3_queue.queue()
         .defer(d3.csv, "data/acs_housing_tract.csv")
-        .defer(d3.json, "data/nyc_tracts_simple.topojson")
+        .defer(d3.json, "data/nyc_tracts_3c.topojson")
         .await(callback);
 
-    function callback(error, csvData, polygonData, france){
+    function callback(error, csvData, polygonData){
         setGraticule(map, path);
 
         // translate topojson
-        var tracts = topojson.feature(polygonData, polygonData.objects.nyc_tracts);
+        var tracts = topojson.feature(polygonData, polygonData.objects.nyc_tracts_3);
 
         // join tracts to csv data
         tracts = joinData(tracts, csvData);
 
+        // create color scale
+        let colorScale = makeColorScale(csvData);
+
         // add polygons to map
-        setEnumerationUnits(tracts, map, path);
+        setEnumerationUnits(tracts, map, path, colorScale);
     };
 };
 
 // add the graticule lines
 function setGraticule(map, path) {
     let graticule = d3.geoGraticule()
-        .step([5, 5]);
+        .step([0.25, 0.25]);
 
     let gratBackground = map.append("path")
         .datum(graticule.outline())
@@ -92,10 +95,42 @@ function joinData(tracts, csvData){
     return tracts;
 };
 
+// color scale generator
+function makeColorScale(data){
+    var colorClasses = [
+        "#D4B9DA",
+        "#C994C7",
+        "#DF65B0",
+        "#DD1C77",
+        "#980043"
+    ];
+
+    let colorScale = d3.scale.quantile()
+        .range(colorClasses);
+
+    let domainArray = [];
+    for (var i=0; i<data.length; i++){
+        let val = parseFloat(data[i]["median_rent"]);
+        domainArray.push(val);
+    };
+
+    colorScale.domain(domainArray);
+
+    return colorScale;
+};
+
 // draw the map
-function setEnumerationUnits(tracts, map, path){
-    let polygons = map.append("path")
-        .datum(tracts)
-        .attr("class", "tracts")
-        .attr("d", path);
+function setEnumerationUnits(tracts, map, path, colorScale){
+    var regions = map.selectAll(".regions")
+        .data(tracts.features)
+        .enter()
+        .append("path")
+        .attr("class", function(d){
+            return "regions " + d.properties.tract_id;
+        })
+        .attr("d", path)
+        .style("fill", function(d){
+            return colorScale(d.properties.median_rent);
+        })
+        ;
 };
