@@ -130,7 +130,16 @@ function setEnumerationUnits(tracts, map, path, colorScale){
         })
         .attr("d", path)
         .style("fill", function(d){
-            return colorScale(d.properties.median_rent);
-        })
-        ;
+            return choropleth(d.properties.median_rent, colorScale);
+        });
+};
+
+function choropleth(val, colorScale){
+    let parsed_val = parseFloat(val);
+
+    if (typeof parsed_val == 'number' && !isNaN(parsed_val)){
+        return colorScale(parsed_val);
+    } else {
+        return "#eee";
+    };
 };

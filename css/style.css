@@ -4,6 +4,12 @@
     stroke-width: 1px;
 }
 
+.regions {
+    stroke: #000;
+    stroke-width: 0.5px;
+    stroke-linecap: round;
+}
+
 .gratLines {
     fill: none;
     stroke: #ffffff;
