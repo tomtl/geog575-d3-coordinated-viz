@@ -5,7 +5,7 @@ window.onload = setMap();
 function setMap(){
     // map frame dimensions
     let height = 460;
-    let width = 960;
+    let width = window.innerWidth * 0.5;
 
     // svg container for map
     let map = d3.select("body")
@@ -16,10 +16,10 @@ function setMap(){
 
     // setup projection
     let projection = d3.geoAlbers()
-        .center([0, 40.75])
+        .center([0, 40.71])
         .rotate([74, 0, 0])
         .parallels([29.5, 45.5])
-        .scale(50000)
+        .scale(60000)
         .translate([width / 2, height / 2]);
 
     let path = d3.geoPath()
@@ -35,7 +35,7 @@ function setMap(){
         setGraticule(map, path);
 
         // translate topojson
-        var tracts = topojson.feature(polygonData, polygonData.objects.nyc_tracts_3);
+        let tracts = topojson.feature(polygonData, polygonData.objects.nyc_tracts_3);
 
         // join tracts to csv data
         tracts = joinData(tracts, csvData);
@@ -45,6 +45,9 @@ function setMap(){
 
         // add polygons to map
         setEnumerationUnits(tracts, map, path, colorScale);
+
+        // create the chart
+        setChart(csvData, colorScale);
     };
 };
 
@@ -76,17 +79,17 @@ function joinData(tracts, csvData){
         "avg_household_size"
     ];
 
-    for (var i=0; i<csvData.length; i++) {
-        var csvRegion = csvData[i];
-        var csvKey = csvRegion.tract_id;
+    for (let i=0; i<csvData.length; i++) {
+        let csvRegion = csvData[i];
+        let csvKey = csvRegion.tract_id;
 
-        for (var a=0; a < tracts.features.length; a++) {
-            var geojsonProps = tracts.features[a].properties;
-            var geojsonKey = geojsonProps.tract_id;
+        for (let a=0; a < tracts.features.length; a++) {
+            let geojsonProps = tracts.features[a].properties;
+            let geojsonKey = geojsonProps.tract_id;
 
             if (geojsonKey == csvKey) {
                 attrArray.forEach(function(attr){
-                    var val = parseFloat(csvRegion[attr]);
+                    let val = parseFloat(csvRegion[attr]);
                     geojsonProps[attr] = val;
                 });
             };
@@ -97,7 +100,7 @@ function joinData(tracts, csvData){
 
 // color scale generator
 function makeColorScale(data){
-    var colorClasses = [
+    let colorClasses = [
         "#D4B9DA",
         "#C994C7",
         "#DF65B0",
@@ -109,7 +112,7 @@ function makeColorScale(data){
         .range(colorClasses);
 
     let domainArray = [];
-    for (var i=0; i<data.length; i++){
+    for (let i=0; i<data.length; i++){
         let val = parseFloat(data[i]["median_rent"]);
         domainArray.push(val);
     };
@@ -121,7 +124,7 @@ function makeColorScale(data){
 
 // draw the map
 function setEnumerationUnits(tracts, map, path, colorScale){
-    var regions = map.selectAll(".regions")
+    let regions = map.selectAll(".regions")
         .data(tracts.features)
         .enter()
         .append("path")
@@ -142,4 +145,52 @@ function choropleth(val, colorScale){
     } else {
         return "#eee";
     };
+};
+
+function getNum(val){
+    let parsedVal = parseFloat(val);
+
+    if (typeof parsedVal == 'number' && !isNaN(parsedVal)){
+        return parsedVal;
+    } else {
+        return 0;
+    };
+};
+
+function setChart(csvData, colorScale){
+    let chartWidth = window.innerWidth * 0.425;
+    let chartHeight = 460;
+
+    let chart = d3.select("body")
+        .append("svg")
+        .attr("width", chartWidth)
+        .attr("height", chartHeight)
+        .attr("class", "chart");
+
+    let yScale = d3.scale.linear()
+        .range([0, chartHeight])
+        .domain([0, 5000]);
+
+    let bars = chart.selectAll(".bars")
+        .data(csvData)
+        .enter()
+        .append("rect")
+        .sort(function(a, b){
+            return a.median_rent - b.median_rent
+        })
+        .attr("class", function(d){
+            return "bars " + d.tract_id;
+        })
+        .attr("width", chartWidth / (csvData.length - 1))
+        .attr("x", function(d, i){
+            return i * (chartWidth / csvData.length);
+        })
+        .attr("height", function(d){
+            return yScale(getNum(d.median_rent))
+        })
+        .attr("y", 0)
+        .style("fill", function(d){
+            return choropleth(d, colorScale);
+        })
+        ;
 };

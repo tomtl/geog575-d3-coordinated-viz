@@ -1,3 +1,8 @@
+.map {
+    border: medium solid #999;
+    margin: 10px 0 0 20px;
+}
+
 .tracts {
     fill: #ffffff;
     stroke: #000000;
@@ -18,4 +23,15 @@
 
 .gratBackground {
     fill: #D5E3FF;
+}
+
+.chart {
+    background-color: rgba(128, 128, 128, 0.2);
+    border: medium solid #999;
+    float: right;
+    margin: 10px 20px 0 0;
+}
+
+.bars {
+    border: none;
 }
