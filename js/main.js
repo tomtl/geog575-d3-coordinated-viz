@@ -160,6 +160,13 @@ function getNum(val){
 function setChart(csvData, colorScale){
     let chartWidth = window.innerWidth * 0.425;
     let chartHeight = 460;
+    let leftPadding = 50;
+    let rightPadding = 2;
+    let topBottomPadding = 5;
+    let chartInnerWidth = chartWidth - leftPadding - rightPadding;
+    let chartInnerHeight = chartHeight - topBottomPadding * 2;
+    let translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
+
     let barCount = 20;
 
     let values = [];
@@ -177,17 +184,23 @@ function setChart(csvData, colorScale){
         .bins(x.ticks(barCount))
         (values);
 
-    console.log(data);
+    // console.log(data);
 
     let y = d3.scale.linear()
         .domain([0, 1000])
-        .range([0, chartHeight]);
+        .range([chartInnerHeight, 0]);
 
     let chart = d3.select("body")
         .append("svg")
         .attr("width", chartWidth)
         .attr("height", chartHeight)
         .attr("class", "chart");
+
+    let chartBackground = chart.append("rect")
+        .attr("class", "chartBackground")
+        .attr("width", chartInnerWidth)
+        .attr("height", chartInnerHeight)
+        .attr("transform", translate);
 
     let bars = chart.selectAll(".bars")
         .data(data)
@@ -196,36 +209,39 @@ function setChart(csvData, colorScale){
         .attr("class", function(d, i){
             return "bars " + i;
         })
-        .attr("width", chartWidth / (barCount - 1))
+        .attr("width", chartInnerWidth / (barCount - 1))
         .attr("x", function(d, i){
-            return i * (chartWidth / barCount);
+            return i * (chartInnerWidth / barCount) + leftPadding;
         })
         .attr("height", function(d){
-            return y(getNum(d.y));
+            return chartInnerHeight - y(getNum(d.y));
         })
         .attr("y", function(d){
-            return chartHeight - y(getNum(d.y));
+            // return topBottomPadding + chartInnerHeight - y(getNum(d.y));
+            return y(d.y) + topBottomPadding;
         })
         .style("fill", function(d){
             return choropleth(d, colorScale);
         });
 
-    let numbers = chart.selectAll(".numbers")
-        .data(data)
-        .enter()
-        .append("text")
-        .attr("class", function(d, i) {
-            return "numbers " + i;
-        })
-        .attr("text-anchor", 'middle')
-        .attr("x", function(d, i) {
-            let fraction = chartWidth / barCount;
-            return i * fraction + (fraction - 1) / 2;
-        })
-        .attr("y", function(d){
-            return chartHeight - y(getNum(d.y)) - 3;
-        })
-        .text(function(d){
-            return d.y;
-        });
+    let chartTitle = chart.append("text")
+        .attr("x", 80)
+        .attr("y", 40)
+        .attr("class", "chartTitle")
+        .text("Median rent by count of tracts");
+
+    let yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left");
+
+    let axis = chart.append("g")
+        .attr("class", "axis")
+        .attr("transform", translate)
+        .call(yAxis);
+
+    let chartFrame = chart.append("rect")
+        .attr("class", "chartFrame")
+        .attr("width", chartInnerWidth)
+        .attr("height", chartInnerHeight)
+        .attr("transform", translate);
 };
