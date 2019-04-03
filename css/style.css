@@ -35,3 +35,8 @@
 .bars {
     border: none;
 }
+
+.numbers {
+    fill: black;
+    font-family: sans-serif;
+}

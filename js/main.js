@@ -160,6 +160,7 @@ function getNum(val){
 function setChart(csvData, colorScale){
     let chartWidth = window.innerWidth * 0.425;
     let chartHeight = 460;
+    let barCount = 20;
 
     let values = [];
 
@@ -173,7 +174,7 @@ function setChart(csvData, colorScale){
         .range([0, chartWidth]);
 
     let data = d3.layout.histogram()
-        .bins(x.ticks(20))
+        .bins(x.ticks(barCount))
         (values);
 
     console.log(data);
@@ -195,9 +196,9 @@ function setChart(csvData, colorScale){
         .attr("class", function(d, i){
             return "bars " + i;
         })
-        .attr("width", chartWidth / (20 - 1))
+        .attr("width", chartWidth / (barCount - 1))
         .attr("x", function(d, i){
-            return i * (chartWidth / 20);
+            return i * (chartWidth / barCount);
         })
         .attr("height", function(d){
             return y(getNum(d.y));
@@ -207,5 +208,24 @@ function setChart(csvData, colorScale){
         })
         .style("fill", function(d){
             return choropleth(d, colorScale);
+        });
+
+    let numbers = chart.selectAll(".numbers")
+        .data(data)
+        .enter()
+        .append("text")
+        .attr("class", function(d, i) {
+            return "numbers " + i;
+        })
+        .attr("text-anchor", 'middle')
+        .attr("x", function(d, i) {
+            let fraction = chartWidth / barCount;
+            return i * fraction + (fraction - 1) / 2;
+        })
+        .attr("y", function(d){
+            return chartHeight - y(getNum(d.y)) - 3;
+        })
+        .text(function(d){
+            return d.y;
         });
 };
