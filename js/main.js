@@ -27,7 +27,7 @@ function setMap(){
 
     //use queue to parallelize asynchronous data loading
     d3_queue.queue()
-        .defer(d3.csv, "data/acs_housing_tract.csv")
+        .defer(d3.csv, "data/acs_housing_tract_nyc.csv")
         .defer(d3.json, "data/nyc_tracts_3c.topojson")
         .await(callback);
 
@@ -161,36 +161,51 @@ function setChart(csvData, colorScale){
     let chartWidth = window.innerWidth * 0.425;
     let chartHeight = 460;
 
+    let values = [];
+
+    for (let i=0; i<csvData.length; i++) {
+        value = parseFloat(csvData[i].median_rent);
+        values.push(value)
+    };
+
+    let x = d3.scale.linear()
+        .domain([0, d3.max(values)])
+        .range([0, chartWidth]);
+
+    let data = d3.layout.histogram()
+        .bins(x.ticks(20))
+        (values);
+
+    console.log(data);
+
+    let y = d3.scale.linear()
+        .domain([0, 1000])
+        .range([0, chartHeight]);
+
     let chart = d3.select("body")
         .append("svg")
         .attr("width", chartWidth)
         .attr("height", chartHeight)
         .attr("class", "chart");
 
-    let yScale = d3.scale.linear()
-        .range([0, chartHeight])
-        .domain([0, 5000]);
-
     let bars = chart.selectAll(".bars")
-        .data(csvData)
+        .data(data)
         .enter()
         .append("rect")
-        .sort(function(a, b){
-            return a.median_rent - b.median_rent
+        .attr("class", function(d, i){
+            return "bars " + i;
         })
-        .attr("class", function(d){
-            return "bars " + d.tract_id;
-        })
-        .attr("width", chartWidth / (csvData.length - 1))
+        .attr("width", chartWidth / (20 - 1))
         .attr("x", function(d, i){
-            return i * (chartWidth / csvData.length);
+            return i * (chartWidth / 20);
         })
         .attr("height", function(d){
-            return yScale(getNum(d.median_rent))
+            return y(getNum(d.y));
         })
-        .attr("y", 0)
+        .attr("y", function(d){
+            return chartHeight - y(getNum(d.y));
+        })
         .style("fill", function(d){
             return choropleth(d, colorScale);
-        })
-        ;
+        });
 };
