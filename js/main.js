@@ -160,12 +160,13 @@ function getNum(val){
 function setChart(csvData, colorScale){
     let chartWidth = window.innerWidth * 0.425;
     let chartHeight = 460;
-    let leftPadding = 50;
+    let leftPadding = 60;
     let rightPadding = 2;
-    let topBottomPadding = 5;
+    let topPadding = 5;
+    let bottomPadding = 40;
     let chartInnerWidth = chartWidth - leftPadding - rightPadding;
-    let chartInnerHeight = chartHeight - topBottomPadding * 2;
-    let translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
+    let chartInnerHeight = chartHeight - topPadding - bottomPadding;
+    let translate = "translate(" + leftPadding + "," + topPadding + ")";
 
     let barCount = 20;
 
@@ -218,7 +219,7 @@ function setChart(csvData, colorScale){
         })
         .attr("y", function(d){
             // return topBottomPadding + chartInnerHeight - y(getNum(d.y));
-            return y(d.y) + topBottomPadding;
+            return y(d.y) + topPadding;
         })
         .style("fill", function(d){
             return choropleth(d, colorScale);
@@ -230,14 +231,39 @@ function setChart(csvData, colorScale){
         .attr("class", "chartTitle")
         .text("Median rent by count of tracts");
 
+    let dollarFormat = function(d) { return '$' + d3.format(',f')(d) };
+
+    let xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom")
+        .tickFormat(dollarFormat)
+        .ticks(10)
+        ;
+
     let yAxis = d3.svg.axis()
         .scale(y)
         .orient("left");
 
-    let axis = chart.append("g")
-        .attr("class", "axis")
+    let yAxisLine = chart.append("g")
+        .attr("class", "yaxis axis")
         .attr("transform", translate)
         .call(yAxis);
+
+    let yAxisTitle = chart.append("text")
+        .attr("text-anchor", "middle")
+        .attr("transform", "translate (" + 20 + "," + chartInnerHeight / 2 + ")rotate(-90)")
+        .text("Count of tracts");
+
+    let xAxisLine = chart.append("g")
+        .attr("class", "xaxis axis")
+        .attr("transform", "translate("+ leftPadding + "," + (chartInnerHeight + topPadding) + ")")
+        .call(xAxis);
+
+    let xAxisTitle = chart.append("text")
+        .attr("class", "axisTitle")
+        .attr("text-anchor", "middle")
+        .attr("transform", "translate(" + (chartInnerWidth / 2) + "," + (chartInnerHeight + 40) + ")")
+        .text("Median monthly rent")
 
     let chartFrame = chart.append("rect")
         .attr("class", "chartFrame")
