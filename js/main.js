@@ -261,19 +261,19 @@ function main(){
                 return chartInnerHeight - y(getNum(d.y));
             })
             .attr("y", function(d){
-                // return topBottomPadding + chartInnerHeight - y(getNum(d.y));
                 return y(d.y) + topPadding;
             })
             .style("fill", function(d){
                 return choropleth(d, colorScale);
-            });
+            })
+            ;
 
         let chartTitle = chart.append("text")
             .attr("x", 80)
             .attr("y", 40)
             .attr("class", "chartTitle")
-            .text("Median rent by count of tracts");
-
+            .text(attrDict[currentAttr]["title"]);
+        //
         let dollarFormat = function(d) { return '$' + d3.format(',f')(d) };
 
         let xAxis = d3.svg.axis()
@@ -281,7 +281,7 @@ function main(){
             .orient("bottom")
             .tickFormat(dollarFormat)
             .ticks(10);
-
+        //
         let yAxis = d3.svg.axis()
             .scale(y)
             .orient("left");
@@ -347,6 +347,8 @@ function main(){
     function updateMap(currentAttr, csvData, colorScale){
         // update the map
         let regions = d3.selectAll(".regions")
+            .transition()
+            .duration(200)
             .style("fill", function(d){
                 return choropleth(d.properties[currentAttr], colorScale);
             });
@@ -384,6 +386,8 @@ function main(){
 
         let bars = d3.selectAll(".bars")
             .data(data)
+            .transition()
+            .duration(200)
             .attr("class", function(d, i){
                 return "bars " + i;
             })
@@ -423,11 +427,13 @@ function main(){
             .orient("left");
 
         let yAxisLine = d3.selectAll(".yaxis")
-            .attr("class", "yaxis axis")
-            .attr("transform", translate)
+            .transition()
+            .duration(100)
             .call(yAxis);
 
         let xAxisLine = d3.selectAll(".xaxis")
+            .transition()
+            .duration(100)
             .call(xAxis);
 
         let xAxisTitle = d3.selectAll(".xAxisTitle")
