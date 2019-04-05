@@ -10,6 +10,46 @@ function main(){
         "avg_household_size"
     ];
 
+    const attrDict = {
+        "median_rent": {
+            "title": "Median rent by count of tracts",
+            "x-axis": "Median monthly rent",
+            "x-data-type": "dollars"
+        },
+        "median_value": {
+            "title": "Median home value by count of tracts",
+            "x-axis": "Median home value (house/apartment/condo)",
+            "x-data-type": "dollars"
+        },
+        "median_income": {
+            "title": "Median household income by count of tracts",
+            "x-axis": "Median household income",
+            "x-data-type": "dollars"
+        },
+        "median_year_built": {
+            "title": "Median year of construction count of tracts",
+            "x-axis": "Median year of construction",
+            "x-data-type": "number"
+        },
+        "avg_household_size": {
+            "title": "Average household size by count of tracts",
+            "x-axis": "Average number of people in household",
+            "x-data-type": "number"
+        },
+    };
+
+    // chart settings
+    const chartWidth = window.innerWidth * 0.425;
+    const chartHeight = 460;
+    const leftPadding = 60;
+    const rightPadding = 2;
+    const topPadding = 5;
+    const bottomPadding = 40;
+    const chartInnerWidth = chartWidth - leftPadding - rightPadding;
+    const chartInnerHeight = chartHeight - topPadding - bottomPadding;
+    const translate = "translate(" + leftPadding + "," + topPadding + ")";
+    const barCount = 35;
+
     // set the currently selected attribute
     var currentAttr = attrArray[0];
 
@@ -167,17 +207,6 @@ function main(){
     };
 
     function setChart(csvData, colorScale){
-        let chartWidth = window.innerWidth * 0.425;
-        let chartHeight = 460;
-        let leftPadding = 60;
-        let rightPadding = 2;
-        let topPadding = 5;
-        let bottomPadding = 40;
-        let chartInnerWidth = chartWidth - leftPadding - rightPadding;
-        let chartInnerHeight = chartHeight - topPadding - bottomPadding;
-        let translate = "translate(" + leftPadding + "," + topPadding + ")";
-
-        let barCount = 20;
 
         let values = [];
 
@@ -194,10 +223,15 @@ function main(){
             .bins(x.ticks(barCount))
             (values);
 
-        // console.log(data);
+        // get max histogram Y value
+        let tractCounts = [];
+        for (let j=0; j<data.length; j++){
+            tractCounts.push(data[j].length);
+        };
+        let maxY = (d3.max(tractCounts));
 
         let y = d3.scale.linear()
-            .domain([0, 1000])
+            .domain([0, maxY * 1.2])
             .range([chartInnerHeight, 0]);
 
         let chart = d3.select("body")
@@ -258,6 +292,7 @@ function main(){
             .call(yAxis);
 
         let yAxisTitle = chart.append("text")
+            .attr("class", "yAxisTitle")
             .attr("text-anchor", "middle")
             .attr("transform", "translate (" + 20 + "," + chartInnerHeight / 2 + ")rotate(-90)")
             .text("Count of tracts");
@@ -268,7 +303,7 @@ function main(){
             .call(xAxis);
 
         let xAxisTitle = chart.append("text")
-            .attr("class", "axisTitle")
+            .attr("class", "xAxisTitle")
             .attr("text-anchor", "middle")
             .attr("transform", "translate(" + (chartInnerWidth / 2) + "," + (chartInnerHeight + 40) + ")")
             .text("Median monthly rent")
@@ -303,13 +338,99 @@ function main(){
 
     function changeAttribute(attribute, csvData){
         currentAttr = attribute;
-
         let colorScale = makeColorScale(csvData);
 
+        updateMap(currentAttr, csvData, colorScale)
+        updateChart(currentAttr, csvData, colorScale);
+    };
+
+    function updateMap(currentAttr, csvData, colorScale){
+        // update the map
         let regions = d3.selectAll(".regions")
             .style("fill", function(d){
-                // console.log(d);
                 return choropleth(d.properties[currentAttr], colorScale);
             });
+    };
+
+    function updateChart(currentAttr, csvData, colorScale){
+        // update the chart
+
+        // setup the values for the histogram
+        let values = [];
+        for (let i=0; i<csvData.length; i++) {
+            value = parseFloat(csvData[i][currentAttr]);
+            values.push(value)
+        };
+
+        let x = d3.scale.linear()
+            .domain([d3.min(values), d3.max(values)])
+            .range([0, chartWidth]);
+
+        // create the histogram
+        let data = d3.layout.histogram()
+            .bins(x.ticks(barCount))
+            (values);
+
+        // get max histogram Y value
+        let tractCounts = [];
+        for (let j=0; j<data.length; j++){
+            tractCounts.push(data[j].length);
+        };
+        let maxY = (d3.max(tractCounts));
+
+        let y = d3.scale.linear()
+            .domain([0, maxY * 1.2])
+            .range([chartInnerHeight, 0]);
+
+        let bars = d3.selectAll(".bars")
+            .data(data)
+            .attr("class", function(d, i){
+                return "bars " + i;
+            })
+            .attr("x", function(d, i){
+                return i * (chartInnerWidth / barCount) + leftPadding;
+            })
+            .attr("height", function(d){
+                return chartInnerHeight - y(getNum(d.y));
+            })
+            .attr("y", function(d){
+                return y(d.y) + topPadding;
+            })
+            .style("fill", function(d){
+                return choropleth(d, colorScale);
+            });
+
+        let chartTitle = d3.selectAll(".chartTitle")
+            .text(attrDict[currentAttr].title);
+
+        let dollarFormat = function(d) {
+            if (attrDict[currentAttr]["x-data-type"] == 'dollars'){
+                return d3.format('$,f')(d);
+            } else {
+                return d3.format('f')(d);
+            }
+        };
+
+        let xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom")
+            .tickFormat(dollarFormat)
+            .ticks(6)
+            ;
+
+        let yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+        let yAxisLine = d3.selectAll(".yaxis")
+            .attr("class", "yaxis axis")
+            .attr("transform", translate)
+            .call(yAxis);
+
+        let xAxisLine = d3.selectAll(".xaxis")
+            .call(xAxis);
+
+        let xAxisTitle = d3.selectAll(".xAxisTitle")
+            .text(attrDict[currentAttr]["x-axis"]);
     };
 };
