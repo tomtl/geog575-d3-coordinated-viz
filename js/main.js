@@ -181,7 +181,8 @@ function main(){
             .enter()
             .append("path")
             .attr("class", function(d){
-                return "regions region" + d.properties.tract_id;
+                return "regions region" + d.properties.tract_id
+                + " val" + d.properties[currentAttr];
             })
             .attr("d", path)
             .style("fill", function(d){
@@ -189,6 +190,7 @@ function main(){
             })
             .on("mouseover", function(d, i){
                 highlightMap(d.properties);
+
             });
     };
 
@@ -273,7 +275,7 @@ function main(){
                 return choropleth(d, colorScale);
             })
             .on("mouseover", function(d, i){
-                highlightChart(i);
+                highlightChart(d, i);
             });
 
         let chartTitle = chart.append("text")
@@ -355,9 +357,10 @@ function main(){
     function updateMap(currentAttr, csvData, colorScale){
         // update the map
         let regions = d3.selectAll(".regions")
-            // .on("mouseover", function(d, i){
-            //     highlightMap(d.properties);
-            // })
+            .attr("class", function(d){
+                return "regions region" + d.properties.tract_id
+                + " val" + d.properties[currentAttr];
+            })
             .transition()
             .duration(200)
             .style("fill", function(d){
@@ -451,6 +454,25 @@ function main(){
             .text(attrDict[currentAttr]["x-axis"]);
     };
 
+    function findRegions(currentBar){
+        // find all the regions of a chart bar
+        console.log(histogramData);
+    };
+
+    function highlightMap(props){
+        // highligh map
+        let selectedRegion = d3.selectAll(".region" + props.tract_id)
+            .style("stroke", "blue")
+            .style("stroke-width", "2");
+
+        // highlight corresponding bars on chart
+        barNum = findHistogramBar(props[currentAttr]);
+
+        let selectedBar = d3.selectAll(".bar" + barNum)
+            .style("stroke", "blue")
+            .style("stroke-width", "2");
+    };
+
     function findHistogramBar(currentAttrVal){
         // Get the histogram bar number
         for (i=0; i<histogramData.length; i++){
@@ -462,17 +484,17 @@ function main(){
         };
     };
 
-    function highlightMap(props){
-        let selected = d3.selectAll(".region" + props.tract_id)
+    function highlightChart(d, i){
+        // highlight chart
+        let selectedBar = d3.selectAll(".bar" + [i])
             .style("stroke", "blue")
             .style("stroke-width", "2");
 
-        highlightChart(findHistogramBar(props[currentAttr]));
-    };
-
-    function highlightChart(barNum){
-        let selected = d3.selectAll(".bar" + barNum)
-            .style("stroke", "blue")
-            .style("stroke-width", "2");
+        // highlight corresponding regions on map
+        for (j=0; j<d.length; j++){
+            let selectedRegion = d3.selectAll(".val" + d[j])
+                .style("stroke", "blue")
+                .style("stroke-width", "2");
+        };
     };
 };
