@@ -53,6 +53,9 @@ function main(){
     // set the currently selected attribute
     var currentAttr = attrArray[0];
 
+    // histogram array
+    var histogramData = [];
+
     //begin script when window loads
     window.onload = setMap();
 
@@ -178,11 +181,14 @@ function main(){
             .enter()
             .append("path")
             .attr("class", function(d){
-                return "regions " + d.properties.tract_id;
+                return "regions region" + d.properties.tract_id;
             })
             .attr("d", path)
             .style("fill", function(d){
                 return choropleth(d.properties[currentAttr], colorScale);
+            })
+            .on("mouseover", function(d, i){
+                highlightMap(d.properties);
             });
     };
 
@@ -219,14 +225,14 @@ function main(){
             .domain([0, d3.max(values)])
             .range([0, chartWidth]);
 
-        let data = d3.layout.histogram()
+        histogramData = d3.layout.histogram()
             .bins(x.ticks(barCount))
             (values);
 
         // get max histogram Y value
         let tractCounts = [];
-        for (let j=0; j<data.length; j++){
-            tractCounts.push(data[j].length);
+        for (let j=0; j<histogramData.length; j++){
+            tractCounts.push(histogramData[j].length);
         };
         let maxY = (d3.max(tractCounts));
 
@@ -247,11 +253,11 @@ function main(){
             .attr("transform", translate);
 
         let bars = chart.selectAll(".bars")
-            .data(data)
+            .data(histogramData)
             .enter()
             .append("rect")
             .attr("class", function(d, i){
-                return "bars " + i;
+                return "bars bar" + i;
             })
             .attr("width", chartInnerWidth / (barCount - 1))
             .attr("x", function(d, i){
@@ -266,7 +272,9 @@ function main(){
             .style("fill", function(d){
                 return choropleth(d, colorScale);
             })
-            ;
+            .on("mouseover", function(d, i){
+                highlightChart(i);
+            });
 
         let chartTitle = chart.append("text")
             .attr("x", 80)
@@ -347,6 +355,9 @@ function main(){
     function updateMap(currentAttr, csvData, colorScale){
         // update the map
         let regions = d3.selectAll(".regions")
+            // .on("mouseover", function(d, i){
+            //     highlightMap(d.properties);
+            // })
             .transition()
             .duration(200)
             .style("fill", function(d){
@@ -369,14 +380,14 @@ function main(){
             .range([0, chartWidth]);
 
         // create the histogram
-        let data = d3.layout.histogram()
+        histogramData = d3.layout.histogram()
             .bins(x.ticks(barCount))
             (values);
 
         // get max histogram Y value
         let tractCounts = [];
-        for (let j=0; j<data.length; j++){
-            tractCounts.push(data[j].length);
+        for (let j=0; j<histogramData.length; j++){
+            tractCounts.push(histogramData[j].length);
         };
         let maxY = (d3.max(tractCounts));
 
@@ -385,11 +396,11 @@ function main(){
             .range([chartInnerHeight, 0]);
 
         let bars = d3.selectAll(".bars")
-            .data(data)
+            .data(histogramData)
             .transition()
             .duration(200)
             .attr("class", function(d, i){
-                return "bars " + i;
+                return "bars bar" + i;
             })
             .attr("x", function(d, i){
                 return i * (chartInnerWidth / barCount) + leftPadding;
@@ -438,5 +449,30 @@ function main(){
 
         let xAxisTitle = d3.selectAll(".xAxisTitle")
             .text(attrDict[currentAttr]["x-axis"]);
+    };
+
+    function findHistogramBar(currentAttrVal){
+        // Get the histogram bar number
+        for (i=0; i<histogramData.length; i++){
+            for (j=0; j<histogramData[i].length; j++){
+                if (histogramData[i][j] == currentAttrVal){
+                    return i;
+                };
+            }
+        };
+    };
+
+    function highlightMap(props){
+        let selected = d3.selectAll(".region" + props.tract_id)
+            .style("stroke", "blue")
+            .style("stroke-width", "2");
+
+        highlightChart(findHistogramBar(props[currentAttr]));
+    };
+
+    function highlightChart(barNum){
+        let selected = d3.selectAll(".bar" + barNum)
+            .style("stroke", "blue")
+            .style("stroke-width", "2");
     };
 };
