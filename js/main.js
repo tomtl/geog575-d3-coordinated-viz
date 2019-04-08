@@ -507,6 +507,16 @@ function main(){
         };
     };
 
+    function getStyle(element, styleName){
+        let styleText = d3.select(element)
+            .select("desc")
+            .text();
+
+        let styleObject = JSON.parse(styleText);
+
+        return styleObject[styleName];
+    };
+
     function dehighlightMap(props){
         // de-highlight the map region
         let selectedRegion = d3.selectAll(".region" + props.tract_id)
@@ -516,16 +526,6 @@ function main(){
             .style("stroke-width", function(){
                 return getStyle(this, "stroke-width");
             });
-
-        function getStyle(element, styleName){
-            let styleText = d3.select(element)
-                .select("desc")
-                .text();
-
-            let styleObject = JSON.parse(styleText);
-
-            return styleObject[styleName];
-        };
 
         // de-highlight corresponding bars on chart
         barNum = findHistogramBar(props[currentAttr]);
@@ -548,16 +548,6 @@ function main(){
             .style("stroke-width", function(){
                 return getStyle(this, "stroke-width");
             });
-
-        function getStyle(element, styleName){
-            let styleText = d3.select(element)
-                .select("desc")
-                .text();
-
-            let styleObject = JSON.parse(styleText);
-
-            return styleObject[styleName];
-        };
 
         // de-highlight corresponding regions on map
         for (j=0; j<d.length; j++){
