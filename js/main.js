@@ -454,11 +454,6 @@ function main(){
             .text(attrDict[currentAttr]["x-axis"]);
     };
 
-    function findRegions(currentBar){
-        // find all the regions of a chart bar
-        console.log(histogramData);
-    };
-
     function highlightMap(props){
         // highligh map
         let selectedRegion = d3.selectAll(".region" + props.tract_id)
