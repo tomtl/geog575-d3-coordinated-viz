@@ -193,7 +193,8 @@ function main(){
             })
             .on("mouseout", function(d){
                 dehighlightMap(d.properties);
-            });
+            })
+            .on("mousemove", moveLabel);
 
 
         // add style descriptor
@@ -480,6 +481,9 @@ function main(){
         let selectedBar = d3.selectAll(".bar" + barNum)
             .style("stroke", "blue")
             .style("stroke-width", "2");
+
+        // add a label to the map
+        setLabel(props);
     };
 
     function findHistogramBar(currentAttrVal){
@@ -537,6 +541,10 @@ function main(){
             .style("stroke-width", function(){
                 return getStyle(this, "stroke-width");
             });
+
+        // remove labels from map
+        d3.select(".infolabel")
+            .remove();
     };
 
     function dehighlightChart(d, i){
@@ -559,5 +567,28 @@ function main(){
                     return getStyle(this, "stroke-width");
                 });
         };
+    };
+
+    function setLabel(props){
+        let labelAttribute = "<h1>" + props[currentAttr] + "</h1><b>" + currentAttr + "</b>";
+
+        let infoLabel = d3.select("body")
+            .append("div")
+            .attr("class", "infolabel")
+            .attr("id", props.tract_id + "_label")
+            .html(labelAttribute);
+
+        let regionName = infoLabel.append("div")
+            .attr("class", "labelname")
+            .html(props.tract_id);
+    };
+
+    function moveLabel(){
+        let x = d3.event.clientX + 10;
+        let y = d3.event.clientY - 75;
+
+        d3.select(".infolabel")
+            .style("left", x + "px")
+            .style("top", y + "px");
     };
 };
