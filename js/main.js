@@ -190,8 +190,15 @@ function main(){
             })
             .on("mouseover", function(d, i){
                 highlightMap(d.properties);
-
+            })
+            .on("mouseout", function(d){
+                dehighlightMap(d.properties);
             });
+
+
+        // add style descriptor
+        let desc = regions.append("desc")
+            .text('{"stroke": "#000", "stroke-width": "0.5px"}');
     };
 
     function choropleth(val, colorScale){
@@ -277,6 +284,10 @@ function main(){
             .on("mouseover", function(d, i){
                 highlightChart(d, i);
             });
+
+        // add style descriptor
+        let desc = bars.append("desc")
+            .text('{"stroke": "none", "stroke-width": "0px"}');
 
         let chartTitle = chart.append("text")
             .attr("x", 80)
@@ -491,5 +502,36 @@ function main(){
                 .style("stroke", "blue")
                 .style("stroke-width", "2");
         };
+    };
+
+    function dehighlightMap(props){
+        let selectedRegion = d3.selectAll(".region" + props.tract_id)
+            .style("stroke", function(){
+                return getStyle(this, "stroke");
+            })
+            .style("stroke-width", function(){
+                return getStyle(this, "stroke-width");
+            });
+
+        function getStyle(element, styleName){
+            let styleText = d3.select(element)
+                .select("desc")
+                .text();
+
+            let styleObject = JSON.parse(styleText);
+
+            return styleObject[styleName];
+        };
+
+        // de-highlight corresponding bars on chart
+        barNum = findHistogramBar(props[currentAttr]);
+
+        let selectedBar = d3.selectAll(".bar" + barNum)
+            .style("stroke", function(){
+                return getStyle(this, "stroke");
+            })
+            .style("stroke-width", function(){
+                return getStyle(this, "stroke-width");
+            });
     };
 };
