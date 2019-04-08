@@ -194,7 +194,7 @@ function main(){
             .on("mouseout", function(d){
                 dehighlightMap(d.properties);
             })
-            .on("mousemove", moveLabel);
+            .on("mousemove", moveMapLabel);
 
 
         // add style descriptor
@@ -287,6 +287,9 @@ function main(){
             })
             .on("mouseout", function(d, i){
                 dehighlightChart(d, i);
+            })
+            .on("mousemove", function(d,i){
+                moveChartLabel(d,i);
             });
 
         // add style descriptor
@@ -483,7 +486,7 @@ function main(){
             .style("stroke-width", "2");
 
         // add a label to the map
-        setLabel(props);
+        setMapLabel(props);
     };
 
     function findHistogramBar(currentAttrVal){
@@ -509,6 +512,8 @@ function main(){
                 .style("stroke", "blue")
                 .style("stroke-width", "2");
         };
+
+        setChartLabel(d, i);
     };
 
     function getStyle(element, styleName){
@@ -567,9 +572,13 @@ function main(){
                     return getStyle(this, "stroke-width");
                 });
         };
+
+        // remove chart label
+        d3.select(".infochartlabel")
+            .remove();
     };
 
-    function setLabel(props){
+    function setMapLabel(props){
         let labelAttribute = "<h1>" + props[currentAttr] + "</h1><b>" + currentAttr + "</b>";
 
         let infoLabel = d3.select("body")
@@ -583,11 +592,71 @@ function main(){
             .html(props.tract_id);
     };
 
-    function moveLabel(){
-        let x = d3.event.clientX + 10;
-        let y = d3.event.clientY - 75;
+    function setChartLabel(d, i){
+        let minVal = d.x;
+        let maxVal = d.x + d.dx;
+        let valCount = d.length;
+
+        let labelAttribute = "<h1>" + minVal + " to " + maxVal + "</h1><b>" +
+                            valCount + " tracts" + "</b>";
+
+        let infoLabel = d3.select("body")
+            .append("div")
+            .attr("class", "infochartlabel")
+            .attr("id", "bar_" + i + "_label")
+            .html(labelAttribute);
+    };
+
+    function moveMapLabel(){
+        // get the width of the label
+        let labelWidth = d3.select(".infolabel")
+            .node()
+            .getBoundingClientRect()
+            .width;
+
+        // move the label with mouse
+        let x1 = d3.event.clientX + 10;
+        let y1 = d3.event.clientY - 75;
+        let x2 = d3.event.clientX - labelWidth - 10;
+        let y2 = d3.event.clientY + 25;
+
+        let x = d3.event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1;
+        let y = d3.event.clientY < 75 ? y2 : y1;
 
         d3.select(".infolabel")
+            .style("left", x + "px")
+            .style("top", y + "px");
+    };
+
+    function moveChartLabel(d, i){
+        // update the chart label text
+        let minVal = d.x;
+        let maxVal = d.x + d.dx;
+        let valCount = d.length;
+
+        let labelAttribute = "<h1>" + minVal + " to " + maxVal + "</h1><b>" +
+                            valCount + " tracts" + "</b>";
+
+        let infoLabel = d3.select(".infochartlabel")
+            .attr("id", "bar_" + i + "_label")
+            .html(labelAttribute);
+
+        // get the width of the label
+        let labelWidth = d3.select(".infochartlabel")
+            .node()
+            .getBoundingClientRect()
+            .width;
+
+        // move the label with mouse
+        let x1 = d3.event.clientX + 10;
+        let y1 = d3.event.clientY - 75;
+        let x2 = d3.event.clientX - labelWidth - 10;
+        let y2 = d3.event.clientY + 25;
+
+        let x = d3.event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1;
+        let y = d3.event.clientY < 75 ? y2 : y1;
+
+        d3.select(".infochartlabel")
             .style("left", x + "px")
             .style("top", y + "px");
     };
