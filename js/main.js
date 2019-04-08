@@ -283,6 +283,9 @@ function main(){
             })
             .on("mouseover", function(d, i){
                 highlightChart(d, i);
+            })
+            .on("mouseout", function(d, i){
+                dehighlightChart(d, i);
             });
 
         // add style descriptor
@@ -505,6 +508,7 @@ function main(){
     };
 
     function dehighlightMap(props){
+        // de-highlight the map region
         let selectedRegion = d3.selectAll(".region" + props.tract_id)
             .style("stroke", function(){
                 return getStyle(this, "stroke");
@@ -533,5 +537,37 @@ function main(){
             .style("stroke-width", function(){
                 return getStyle(this, "stroke-width");
             });
+    };
+
+    function dehighlightChart(d, i){
+        // de-highlight the chart bar
+        let selectedBar = d3.selectAll(".bar" + [i])
+            .style("stroke", function(){
+                return getStyle(this, "stroke");
+            })
+            .style("stroke-width", function(){
+                return getStyle(this, "stroke-width");
+            });
+
+        function getStyle(element, styleName){
+            let styleText = d3.select(element)
+                .select("desc")
+                .text();
+
+            let styleObject = JSON.parse(styleText);
+
+            return styleObject[styleName];
+        };
+
+        // de-highlight corresponding regions on map
+        for (j=0; j<d.length; j++){
+            let selectedRegion = d3.selectAll(".val" + d[j])
+                .style("stroke", function(){
+                    return getStyle(this, "stroke");
+                })
+                .style("stroke-width", function(){
+                    return getStyle(this, "stroke-width");
+                });
+        };
     };
 };
