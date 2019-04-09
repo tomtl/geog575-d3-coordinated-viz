@@ -48,7 +48,8 @@ function main(){
     const chartInnerWidth = chartWidth - leftPadding - rightPadding;
     const chartInnerHeight = chartHeight - topPadding - bottomPadding;
     const translate = "translate(" + leftPadding + "," + topPadding + ")";
-    const barCount = 35;
+
+    var barCount = 35;
 
     // set the currently selected attribute
     var currentAttr = attrArray[0];
@@ -153,11 +154,11 @@ function main(){
     // color scale generator
     function makeColorScale(data){
         let colorClasses = [
-            "#D4B9DA",
-            "#C994C7",
-            "#DF65B0",
-            "#DD1C77",
-            "#980043"
+            "#BBDDF2",
+            "#79C4F2",
+            "#57AAF2",
+            "#3B7FD9",
+            "#2165BF"
         ];
 
         let colorScale = d3.scale.quantile()
@@ -361,7 +362,7 @@ function main(){
             .enter()
             .append("option")
             .attr("value", function(d){ return d })
-            .text(function(d){ return d });
+            .text(function(d){ return attrDict[d]["x-axis"] });
     };
 
     function changeAttribute(attribute, csvData){
@@ -475,14 +476,14 @@ function main(){
     function highlightMap(props){
         // highligh map
         let selectedRegion = d3.selectAll(".region" + props.tract_id)
-            .style("stroke", "blue")
+            .style("stroke", "yellow")
             .style("stroke-width", "2");
 
         // highlight corresponding bars on chart
         barNum = findHistogramBar(props[currentAttr]);
 
         let selectedBar = d3.selectAll(".bar" + barNum)
-            .style("stroke", "blue")
+            .style("stroke", "yellow")
             .style("stroke-width", "2");
 
         // add a label to the map
@@ -503,13 +504,13 @@ function main(){
     function highlightChart(d, i){
         // highlight chart
         let selectedBar = d3.selectAll(".bar" + [i])
-            .style("stroke", "blue")
+            .style("stroke", "yellow")
             .style("stroke-width", "2");
 
         // highlight corresponding regions on map
         for (j=0; j<d.length; j++){
             let selectedRegion = d3.selectAll(".val" + d[j])
-                .style("stroke", "blue")
+                .style("stroke", "yellow")
                 .style("stroke-width", "2");
         };
 
@@ -579,7 +580,15 @@ function main(){
     };
 
     function setMapLabel(props){
-        let labelAttribute = "<h1>" + props[currentAttr] + "</h1><b>" + currentAttr + "</b>";
+        let labelAttribute = function(){
+            if (attrDict[currentAttr]["x-data-type"] == "dollars") {
+                return "<b>$" + d3.format(",.2r")(props[currentAttr]) + "</b>" +
+                "<p>" + attrDict[currentAttr]["x-axis"] + "</p>";
+            } else {
+                return"<b>" + props[currentAttr] + "</b>" +
+                "<p>" + attrDict[currentAttr]["x-axis"] + "</p>";
+            };
+        };
 
         let infoLabel = d3.select("body")
             .append("div")
@@ -597,8 +606,22 @@ function main(){
         let maxVal = d.x + d.dx;
         let valCount = d.length;
 
-        let labelAttribute = "<h1>" + minVal + " to " + maxVal + "</h1><b>" +
-                            valCount + " tracts" + "</b>";
+        let labelAttribute = function(){
+            if (attrDict[currentAttr]["x-data-type"] == "dollars") {
+                return (
+                    "<b>$" + d3.format(",.2r")(minVal) +
+                    " to $" + d3.format(",.2r")(maxVal) + "</b><br>" +
+                    "<p>" + attrDict[currentAttr]["x-axis"] +
+                    " for " + valCount + " tracts" + "</p>"
+                );
+            } else {
+                return (
+                    "<b>" + minVal + " to " + maxVal + "</b>" +
+                    "<p>" + attrDict[currentAttr]["x-axis"] +
+                    " for " + valCount + " tracts" + "</p>"
+                );
+            };
+        };
 
         let infoLabel = d3.select("body")
             .append("div")
@@ -634,8 +657,22 @@ function main(){
         let maxVal = d.x + d.dx;
         let valCount = d.length;
 
-        let labelAttribute = "<h1>" + minVal + " to " + maxVal + "</h1><b>" +
-                            valCount + " tracts" + "</b>";
+        let labelAttribute = function(){
+            if (attrDict[currentAttr]["x-data-type"] == "dollars") {
+                return (
+                    "<b>$" + d3.format(",.2r")(minVal) +
+                    " to $" + d3.format(",.2r")(maxVal) + "</b><br>" +
+                    "<p>" + attrDict[currentAttr]["x-axis"] +
+                    " for " + valCount + " tracts" + "</p>"
+                );
+            } else {
+                return (
+                    "<b>" + minVal + " to " + maxVal + "</b>" +
+                    "<p>" + attrDict[currentAttr]["x-axis"] +
+                    " for " + valCount + " tracts" + "</p>"
+                );
+            };
+        };
 
         let infoLabel = d3.select(".infochartlabel")
             .attr("id", "bar_" + i + "_label")

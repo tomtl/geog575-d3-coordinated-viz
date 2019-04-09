@@ -1,5 +1,5 @@
 .map {
-    border: medium solid #999;
+    border: thin solid #000000;
     margin: 10px 0 0 20px;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .gratBackground {
-    fill: #D5E3FF;
+    fill: #f2f2f2;
 }
 
 .chart {
@@ -46,13 +46,13 @@
 }
 
 .chartBackground {
-    fill: rgba(128,128,128,.2);
+    fill: #f2f2f2;
 }
 
 .chartFrame {
     fill: none;
-    stroke: #999;
-    stroke-width: 3px;
+    stroke: #000000;
+    stroke-width: 1px;
     shape-rendering: crispEdges;
 }
 
@@ -87,18 +87,19 @@ option {
     font-weight: normal;
 }
 
-.infolabel, .infochartlabel {
+.infolabel, .infochartlabel{
     position: absolute;
-    height: 50px;
     min-width: 100px;
-    color: #fff;
-    background-color: #000;
-    border: solid thin #fff;
-    padding: 5px 10px;
+    color: #000;
+    background-color: #fff;
+    border: solid thin #000;
+    border-radius: 5px;
+    padding: 5px;
     top: -75px;
+    line-height: 0.5em;
 }
 
-.infolabel h1, .infochartlabel h1 {
+.infolabel b, .infochartlabel b {
     margin: 0 20px 0 0;
     padding: 0;
     display: inline-block;
