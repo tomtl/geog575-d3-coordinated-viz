@@ -48,8 +48,7 @@ function main(){
     const chartInnerWidth = chartWidth - leftPadding - rightPadding;
     const chartInnerHeight = chartHeight - topPadding - bottomPadding;
     const translate = "translate(" + leftPadding + "," + topPadding + ")";
-
-    var barCount = 35;
+    const barCount = 35;
 
     // set the currently selected attribute
     var currentAttr = attrArray[0];
@@ -348,6 +347,7 @@ function main(){
         let dropdown = d3.select("body")
             .append("select")
             .attr("class", "dropdown")
+            .attr("transform", "translate(0,200)")
             .on("change", function(){
                 changeAttribute(this.value, csvData)
             });
